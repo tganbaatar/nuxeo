@@ -192,7 +192,9 @@ public class DBSSession implements Session<QueryFilter> {
 
     public DBSSession(DBSRepository repository) {
         this.repository = repository;
-        transaction = new DBSTransactionState(repository, this);
+        @SuppressWarnings("resource") // connection closed by DBSTransactionState.close
+        DBSConnection connection = repository.getConnection();
+        transaction = new DBSTransactionState(repository, connection, this);
         FulltextConfiguration fulltextConfiguration = repository.getFulltextConfiguration();
         fulltextSearchDisabled = fulltextConfiguration == null || fulltextConfiguration.fulltextSearchDisabled;
         changeTokenEnabled = repository.isChangeTokenEnabled();
@@ -210,6 +212,7 @@ public class DBSSession implements Session<QueryFilter> {
 
     @Override
     public void close() {
+        transaction.close();
         closed = true;
     }
 
@@ -253,7 +256,7 @@ public class DBSSession implements Session<QueryFilter> {
     }
 
     protected String getRootId() {
-        return repository.getRootId();
+        return transaction.getRootId();
     }
 
     /*
@@ -1455,7 +1458,7 @@ public class DBSSession implements Session<QueryFilter> {
         return newAcp;
     }
 
-    protected static Serializable acpToMem(ACP acp) {
+    public static Serializable acpToMem(ACP acp) {
         if (acp == null) {
             return null;
         }
@@ -1705,7 +1708,7 @@ public class DBSSession implements Session<QueryFilter> {
         }
 
         // query the repository
-        PartialList<Map<String, Serializable>> projections = repository.queryAndFetch(evaluator, repoOrderByClause,
+        PartialList<Map<String, Serializable>> projections = transaction.queryAndFetch(evaluator, repoOrderByClause,
                 distinctDocuments, repoLimit, repoOffset, countUpTo);
 
         for (Map<String, Serializable> proj : projections) {
@@ -1878,7 +1881,7 @@ public class DBSSession implements Session<QueryFilter> {
         selectClause.add(new Reference(NXQL.ECM_UUID));
         sqlQuery = new DBSQueryOptimizer().optimize(sqlQuery);
         DBSExpressionEvaluator evaluator = new DBSExpressionEvaluator(this, sqlQuery, null, fulltextSearchDisabled);
-        return repository.scroll(evaluator, batchSize, keepAliveSeconds);
+        return transaction.scroll(evaluator, batchSize, keepAliveSeconds);
     }
 
     @Override
@@ -1892,12 +1895,12 @@ public class DBSSession implements Session<QueryFilter> {
         }
         DBSExpressionEvaluator evaluator = new DBSExpressionEvaluator(this, sqlQuery, queryFilter.getPrincipals(),
                 fulltextSearchDisabled);
-        return repository.scroll(evaluator, batchSize, keepAliveSeconds);
+        return transaction.scroll(evaluator, batchSize, keepAliveSeconds);
     }
 
     @Override
     public ScrollResult<String> scroll(String scrollId) {
-        return repository.scroll(scrollId);
+        return transaction.scroll(scrollId);
     }
 
     private String countUpToAsString(long countUpTo) {
@@ -2218,6 +2221,7 @@ public class DBSSession implements Session<QueryFilter> {
 
     @Override
     public LockManager getLockManager() {
+        // we have to ask the repository because the lock manager may be contributed
         return repository.getLockManager();
     }
 
