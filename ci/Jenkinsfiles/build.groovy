@@ -535,22 +535,21 @@ pipeline {
           ----------------------------------------
           Run "dev" functional tests
           ----------------------------------------"""
-          script {
-            try {
-              runFunctionalTests('nuxeo-distribution/nuxeo-server-tests')
-              runFunctionalTests('nuxeo-distribution/nuxeo-server-hotreload-tests')
-              runFunctionalTests('nuxeo-distribution/nuxeo-server-gatling-tests')
-              runFunctionalTests('ftests')
-              setGitHubBuildStatus('platform/ftests/dev', 'Functional tests - dev environment', 'SUCCESS')
-            } catch (err) {
-              setGitHubBuildStatus('platform/ftests/dev', 'Functional tests - dev environment', 'FAILURE')
-            }
-          }
+          runFunctionalTests('nuxeo-distribution/nuxeo-server-tests')
+          runFunctionalTests('nuxeo-distribution/nuxeo-server-hotreload-tests')
+          runFunctionalTests('nuxeo-distribution/nuxeo-server-gatling-tests')
+          runFunctionalTests('ftests')
         }
       }
       post {
         always {
           junit testResults: '**/target/failsafe-reports/*.xml'
+        }
+        success {
+          setGitHubBuildStatus('platform/ftests/dev', 'Functional tests - dev environment', 'SUCCESS')
+        }
+        failure {
+          setGitHubBuildStatus('platform/ftests/dev', 'Functional tests - dev environment', 'FAILURE')
         }
       }
     }
