@@ -69,6 +69,10 @@ public class DBSCachingRepository implements DBSRepository {
 
     private static final Log log = LogFactory.getLog(DBSCachingRepository.class);
 
+    protected static final String METRIC_CACHE_NAME = "nuxeo.repositories.repository.cache";
+
+    protected static final String METRIC_CHILD_CACHE_NAME = "nuxeo.repositories.repository.childCache";
+
     private final DBSRepository repository;
 
     private final Cache<String, State> cache;
@@ -85,10 +89,9 @@ public class DBSCachingRepository implements DBSRepository {
         this.repository = repository;
         // Init caches
         cache = newCache(descriptor);
-        registry.registerAll(GuavaCacheMetric.of(cache, "nuxeo", "repositories", repository.getName(), "cache"));
+        registry.registerAll(GuavaCacheMetric.of(cache, MetricName.build(METRIC_CACHE_NAME).tagged("repository", repository.getName())));
         childCache = newCache(descriptor);
-        registry.registerAll(
-                GuavaCacheMetric.of(childCache, "nuxeo", "repositories", repository.getName(), "childCache"));
+        registry.registerAll(GuavaCacheMetric.of(childCache, MetricName.build(METRIC_CHILD_CACHE_NAME).tagged("repository", repository.getName())));
         if (log.isInfoEnabled()) {
             log.info(String.format("DBS cache activated on '%s' repository", repository.getName()));
         }
@@ -155,10 +158,8 @@ public class DBSCachingRepository implements DBSRepository {
         cache.invalidateAll();
         childCache.invalidateAll();
         // Remove metrics
-        MetricName cacheName = MetricRegistry.name("nuxeo", "repositories", repository.getName(), "cache");
-        MetricName childCacheName = MetricRegistry.name("nuxeo", "repositories", repository.getName(), "childCache");
-        registry.removeMatching((name, metric) -> name.getKey().startsWith(cacheName.getKey())
-                || name.getKey().startsWith(childCacheName.getKey()));
+        registry.removeMatching((name, metric) -> name.getKey().startsWith(METRIC_CACHE_NAME)
+                || name.getKey().startsWith(METRIC_CHILD_CACHE_NAME));
         if (log.isInfoEnabled()) {
             log.info(String.format("DBS cache deactivated on '%s' repository", repository.getName()));
         }
