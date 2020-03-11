@@ -169,13 +169,13 @@ def buildUnitTestStage(env) {
                 envsubst < ci/mvn/nuxeo-test-${env}.properties > ${HOME}/nuxeo-test-${env}.properties
             """
             // run unit tests:
-            // - in nuxeo-core and dependent projects only (nuxeo-common and nuxeo-runtime are run in dedicated stages)
+            // - in modules/core and dependent projects only (modules/runtime are run in dedicated stages)
             // - for the given environment (see the customEnvironment profile in pom.xml):
             //   - in an alternative build directory
             //   - loading some test framework system properties
             def testCore = env == 'mongodb' ? 'mongodb' : 'vcs'
             sh """
-              mvn -B -nsu -rf nuxeo-core \
+              mvn -B -nsu -rf :nuxeo-core-parent \
                 -Dcustom.environment=${env} \
                 -Dnuxeo.test.core=${testCore} \
                 -Dnuxeo.test.redis.host=${redisHost} \
@@ -462,31 +462,6 @@ pipeline {
         }
         failure {
           setGitHubBuildStatus('platform/docker/deploy', 'Deploy Docker images', 'FAILURE')
-        }
-      }
-    }
-    stage('Run common unit tests') {
-      steps {
-        setGitHubBuildStatus('platform/utests/common/dev', 'Unit tests - common', 'PENDING')
-        container('maven') {
-          echo """
-          ----------------------------------------
-          Run common unit tests
-          ----------------------------------------"""
-          dir('nuxeo-common') {
-            sh "mvn -B -nsu test"
-          }
-        }
-      }
-      post {
-        always {
-          junit testResults: '**/target/surefire-reports/*.xml'
-        }
-        success {
-          setGitHubBuildStatus('platform/utests/common/dev', 'Unit tests - common', 'SUCCESS')
-        }
-        failure {
-          setGitHubBuildStatus('platform/utests/common/dev', 'Unit tests - common', 'FAILURE')
         }
       }
     }
