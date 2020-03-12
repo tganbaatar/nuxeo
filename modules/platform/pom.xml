@@ -12,6 +12,11 @@
   <name>Nuxeo Platform Parent</name>
 
   <modules>
+    <module>nuxeo-admin-center</module>
+    <module>nuxeo-adobe-connector-core</module>
+    <module>nuxeo-apidoc-server</module>
+    <module>nuxeo-audit-storage-directory</module>
+    <module>nuxeo-automation</module>
     <module>nuxeo-binary-metadata</module>
     <module>nuxeo-chemistry</module>
     <module>nuxeo-csv-core</module>
@@ -21,26 +26,53 @@
     <module>nuxeo-drive-server</module>
     <module>nuxeo-duoweb-authentication</module>
     <module>nuxeo-easyshare-core</module>
+    <module>nuxeo-elasticsearch</module>
+    <module>nuxeo-features-test</module>
     <module>nuxeo-filesystem-connectors</module>
     <module>nuxeo-fsexporter</module>
     <module>nuxeo-jsf-to-web-ui</module>
     <module>nuxeo-liveconnect</module>
+    <module>nuxeo-localconf-simple</module>
     <module>nuxeo-multi-tenant-core</module>
     <module>nuxeo-platform-3d</module>
     <module>nuxeo-platform-audio-core</module>
+    <module>nuxeo-platform-audit</module>
+    <module>nuxeo-platform-comment</module>
+    <module>nuxeo-platform-csv-export</module>
     <module>nuxeo-platform-document-routing</module>
+    <module>nuxeo-platform-forms-layout-export</module>
+    <module>nuxeo-platform-imaging</module>
     <module>nuxeo-platform-importer</module>
+    <module>nuxeo-platform-io</module>
+    <module>nuxeo-platform-lang</module>
     <module>nuxeo-platform-lang-ext</module>
     <module>nuxeo-platform-lang-ext-incomplete</module>
+    <module>nuxeo-platform-mail</module>
+    <module>nuxeo-platform-notification</module>
+    <module>nuxeo-platform-oauth</module>
+    <module>nuxeo-platform-oauth1</module>
     <module>nuxeo-platform-pdf-utils</module>
+    <module>nuxeo-platform-publisher</module>
+    <module>nuxeo-platform-relations</module>
+    <module>nuxeo-platform-rendition</module>
     <module>nuxeo-platform-suggestbox-core</module>
+    <module>nuxeo-platform-tag-service</module>
+    <module>nuxeo-platform-task</module>
+    <module>nuxeo-platform-userpreferences</module>
+    <module>nuxeo-platform-userworkspace</module>
     <module>nuxeo-platform-video</module>
+    <module>nuxeo-platform-virtualnavigation-core-contrib</module>
+    <module>nuxeo-preview-core</module>
     <module>nuxeo-quota</module>
+    <module>nuxeo-search</module>
     <module>nuxeo-signature</module>
     <module>nuxeo-target-platforms</module>
     <module>nuxeo-template-rendering</module>
+    <module>nuxeo-thumbnail</module>
     <module>nuxeo-tree-snapshot-core</module>
+    <module>nuxeo-user-profile</module>
     <module>nuxeo-wopi</module>
+    <module>rest-api</module>
   </modules>
 
 </project>
