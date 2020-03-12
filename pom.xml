@@ -6865,9 +6865,9 @@
     <profile>
       <id>distrib</id>
       <modules>
-        <module>nuxeo-distribution</module>
-        <module>packages</module>
         <module>ftests</module>
+        <module>packages</module>
+        <module>server</module>
       </modules>
     </profile>
 

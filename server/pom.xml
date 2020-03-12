@@ -12,9 +12,10 @@
   <name>Nuxeo Server</name>
 
   <modules>
-    <module>core</module>
-    <module>runtime</module>
-    <module>platform</module>
+    <module>nuxeo-functional-tests</module>
+    <module>nuxeo-launcher</module>
+    <module>nuxeo-nxr-server</module>
+    <module>nuxeo-server-tomcat</module>
   </modules>
 
 </project>
