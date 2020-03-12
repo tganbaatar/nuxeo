@@ -70,6 +70,7 @@
     <module>nuxeo-signature</module>
     <module>nuxeo-target-platforms</module>
     <module>nuxeo-template-rendering</module>
+    <module>nuxeo-theme-styling</module>
     <module>nuxeo-thumbnail</module>
     <module>nuxeo-tree-snapshot-core</module>
     <module>nuxeo-user-profile</module>
