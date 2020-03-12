@@ -10,8 +10,7 @@ Nuxeo-Require: org.nuxeo.ecm.core,
  org.nuxeo.ecm.core.schema,
  org.nuxeo.ecm.directory,
  org.nuxeo.ecm.directory.sql
-Nuxeo-Component:
- OSGI-INF/schema-contrib.xml,
+Nuxeo-Component: OSGI-INF/schema-contrib.xml,
  OSGI-INF/directory-contrib.xml,
  OSGI-INF/root-service-contrib.xml,
  OSGI-INF/cert-service-contrib.xml,

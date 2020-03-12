@@ -6,4 +6,3 @@ Bundle-Version: 1.0.0
 Require-Bundle:  org.nuxeo.ecm.core,
  org.nuxeo.runtime,
  org.nuxeo.ecm.core.api
-Nuxeo-Component:
