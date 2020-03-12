@@ -300,7 +300,7 @@ pipeline {
           ----------------------------------------
           Package
           ----------------------------------------"""
-          sh 'mvn -B -nsu -f nuxeo-distribution/pom.xml -DskipTests install'
+          sh 'mvn -B -nsu -f server/pom.xml -DskipTests install'
           sh 'mvn -B -nsu -f packages/pom.xml -DskipTests install'
         }
       }
@@ -371,7 +371,7 @@ pipeline {
           Image tag: ${VERSION}
           """
           echo "Build and push Docker images to internal Docker registry ${DOCKER_REGISTRY}"
-          // Fetch Nuxeo distribution and Nuxeo Content Platform packages with Maven
+          // Fetch Nuxeo Tomcat Server and Nuxeo Content Platform packages with Maven
           sh "mvn -B -nsu -f docker/pom.xml process-resources"
           skaffoldBuildAll()
         }
@@ -473,7 +473,7 @@ pipeline {
           ----------------------------------------
           Run runtime unit tests
           ----------------------------------------"""
-          dir('nuxeo-runtime') {
+          dir('modules/runtime') {
             sh "mvn -B -nsu test"
           }
         }
@@ -511,9 +511,6 @@ pipeline {
           ----------------------------------------"""
           script {
             try {
-              runFunctionalTests('nuxeo-distribution/nuxeo-server-tests')
-              runFunctionalTests('nuxeo-distribution/nuxeo-server-hotreload-tests')
-              runFunctionalTests('nuxeo-distribution/nuxeo-server-gatling-tests')
               runFunctionalTests('ftests')
               setGitHubBuildStatus('platform/ftests/dev', 'Functional tests - dev environment', 'SUCCESS')
             } catch (err) {
