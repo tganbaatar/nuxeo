@@ -12,6 +12,35 @@
   <name>Nuxeo Platform Parent</name>
 
   <modules>
+    <module>nuxeo-binary-metadata</module>
+    <module>nuxeo-chemistry</module>
+    <module>nuxeo-csv-core</module>
+    <module>nuxeo-dam</module>
+    <module>nuxeo-datadog-reporter</module>
+    <module>nuxeo-dmk-adaptor</module>
+    <module>nuxeo-drive-server</module>
+    <module>nuxeo-duoweb-authentication</module>
+    <module>nuxeo-easyshare-core</module>
+    <module>nuxeo-filesystem-connectors</module>
+    <module>nuxeo-fsexporter</module>
+    <module>nuxeo-jsf-to-web-ui</module>
+    <module>nuxeo-liveconnect</module>
+    <module>nuxeo-multi-tenant-core</module>
+    <module>nuxeo-platform-3d</module>
+    <module>nuxeo-platform-audio-core</module>
+    <module>nuxeo-platform-document-routing</module>
+    <module>nuxeo-platform-importer</module>
+    <module>nuxeo-platform-lang-ext</module>
+    <module>nuxeo-platform-lang-ext-incomplete</module>
+    <module>nuxeo-platform-pdf-utils</module>
+    <module>nuxeo-platform-suggestbox-core</module>
+    <module>nuxeo-platform-video</module>
+    <module>nuxeo-quota</module>
+    <module>nuxeo-signature</module>
+    <module>nuxeo-target-platforms</module>
+    <module>nuxeo-template-rendering</module>
+    <module>nuxeo-tree-snapshot-core</module>
+    <module>nuxeo-wopi</module>
   </modules>
 
 </project>
