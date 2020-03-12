@@ -39,6 +39,7 @@
     <module>nuxeo-platform-audit</module>
     <module>nuxeo-platform-comment</module>
     <module>nuxeo-platform-csv-export</module>
+    <module>nuxeo-platform-default-config</module>
     <module>nuxeo-platform-document-routing</module>
     <module>nuxeo-platform-forms-layout-export</module>
     <module>nuxeo-platform-imaging</module>
@@ -62,6 +63,7 @@
     <module>nuxeo-platform-userworkspace</module>
     <module>nuxeo-platform-video</module>
     <module>nuxeo-platform-virtualnavigation-core-contrib</module>
+    <module>nuxeo-platform-webapp-types</module>
     <module>nuxeo-preview-core</module>
     <module>nuxeo-quota</module>
     <module>nuxeo-search</module>
