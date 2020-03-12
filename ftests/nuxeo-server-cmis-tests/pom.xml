@@ -25,6 +25,11 @@
       <plugin>
         <groupId>org.nuxeo.build</groupId>
         <artifactId>ant-assembly-maven-plugin</artifactId>
+        <configuration>
+          <buildFiles>
+            <buildFile>${basedir}/itests.xml</buildFile>
+          </buildFiles>
+        </configuration>
         <executions>
           <execution>
             <id>start-nuxeo</id>
@@ -33,7 +38,6 @@
               <goal>build</goal>
             </goals>
             <configuration>
-              <buildFile>${basedir}/itests.xml</buildFile>
               <targets>
                 <target>prepare-environment</target>
                 <target>start</target>
@@ -47,7 +51,6 @@
               <goal>verify</goal>
             </goals>
             <configuration>
-              <buildFile>${basedir}/itests.xml</buildFile>
               <targets>
                 <target>run-cmis-tests</target>
               </targets>
@@ -60,7 +63,6 @@
               <goal>build</goal>
             </goals>
             <configuration>
-              <buildFile>${basedir}/itests.xml</buildFile>
               <targets>
                 <target>stop</target>
               </targets>

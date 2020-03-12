@@ -4,12 +4,13 @@
     <groupId>org.nuxeo.ecm</groupId>
     <artifactId>nuxeo-drive-parent</artifactId>
     <version>11.1-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
+
   <groupId>org.nuxeo.ecm</groupId>
   <artifactId>nuxeo-drive-elasticsearch</artifactId>
   <name>Nuxeo Drive Elasticsearch</name>
   <description>Nuxeo Drive Elasticsearch</description>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.commons</groupId>

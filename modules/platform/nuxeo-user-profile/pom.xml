@@ -2,12 +2,13 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.nuxeo.ecm.platform</groupId>
-    <artifactId>nuxeo-user-center-parent</artifactId>
+    <artifactId>nuxeo-platform-parent</artifactId>
     <version>11.1-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
+
   <artifactId>nuxeo-user-profile</artifactId>
   <name>Nuxeo User Profile</name>
+
   <dependencies>
     <dependency>
       <groupId>org.nuxeo.common</groupId>

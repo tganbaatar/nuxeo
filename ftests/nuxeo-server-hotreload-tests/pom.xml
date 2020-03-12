@@ -68,7 +68,9 @@
         <groupId>org.nuxeo.build</groupId>
         <artifactId>ant-assembly-maven-plugin</artifactId>
         <configuration>
-          <buildFile>${basedir}/itests.xml</buildFile>
+          <buildFiles>
+            <buildFile>${basedir}/itests.xml</buildFile>
+          </buildFiles>
         </configuration>
         <executions>
           <execution>
