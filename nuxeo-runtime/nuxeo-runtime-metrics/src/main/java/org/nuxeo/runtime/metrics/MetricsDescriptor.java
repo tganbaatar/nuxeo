@@ -18,402 +18,121 @@
  */
 package org.nuxeo.runtime.metrics;
 
-import static org.apache.logging.log4j.Level.INFO;
-import static org.apache.logging.log4j.LogManager.ROOT_LOGGER_NAME;
-
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import org.apache.commons.logging.LogFactory;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
 import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.common.xmap.annotation.XNodeList;
 import org.nuxeo.common.xmap.annotation.XObject;
-import org.nuxeo.runtime.api.Framework;
-import org.nuxeo.runtime.management.ServerLocator;
+import org.nuxeo.runtime.model.Descriptor;
 
+import io.dropwizard.metrics5.Metric;
 import io.dropwizard.metrics5.MetricAttribute;
+import io.dropwizard.metrics5.MetricFilter;
 import io.dropwizard.metrics5.MetricName;
-import io.dropwizard.metrics5.MetricRegistry;
-import io.dropwizard.metrics5.graphite.Graphite;
-import io.dropwizard.metrics5.graphite.GraphiteReporter;
-import io.dropwizard.metrics5.jmx.JmxReporter;
-import io.dropwizard.metrics5.jvm.BufferPoolMetricSet;
-import io.dropwizard.metrics5.jvm.FileDescriptorRatioGauge;
-import io.dropwizard.metrics5.jvm.GarbageCollectorMetricSet;
-import io.dropwizard.metrics5.jvm.JmxAttributeGauge;
-import io.dropwizard.metrics5.jvm.MemoryUsageGaugeSet;
-import io.dropwizard.metrics5.jvm.ThreadStatesGaugeSet;
-import io.dropwizard.metrics5.log4j2.InstrumentedAppender;
 
-@XObject("metrics")
-public class MetricsDescriptor implements Serializable {
+@XObject("configuration")
+public class MetricsDescriptor implements Descriptor, MetricFilter {
 
-    private static final long serialVersionUID = 7833869486922092460L;
+    protected static final String ALL_METRICS = "ALL";
 
-    public MetricsDescriptor() {
-        super();
-        graphiteReporter = new GraphiteDescriptor();
-        tomcatInstrumentation = new TomcatInstrumentationDescriptor();
-        log4jInstrumentation = new Log4jInstrumentationDescriptor();
+    @Override
+    public String getId() {
+        return UNIQUE_DESCRIPTOR_ID;
     }
 
-    @XObject(value = "graphiteReporter")
-    public static class GraphiteDescriptor {
+    @XNode("@enabled")
+    protected boolean isEnabled = true;
 
-        public static final String ENABLED_PROPERTY = "metrics.graphite.enabled";
+    @XObject(value = "instrument")
+    public static class InstrumentDescriptor implements Descriptor {
 
-        public static final String HOST_PROPERTY = "metrics.graphite.host";
-
-        public static final String PORT_PROPERTY = "metrics.graphite.port";
-
-        public static final String PERIOD_PROPERTY = "metrics.graphite.period";
-
-        public static final String PREFIX_PROPERTY = "metrics.graphite.prefix";
-
-        /**
-         * A list of metric prefixes that if defined should be kept reported, separated by commas
-         *
-         * @since 9.3
-         */
-        public static final String ALLOWED_METRICS_PROPERTY = "metrics.graphite.allowedMetrics";
-
-        /**
-         * A list of metric prefixes that if defined should not be reported, separated by commas
-         *
-         * @since 9.3
-         */
-        public static final String DENIED_METRICS_PROPERTY = "metrics.graphite.deniedMetrics";
-
-        /**
-         * @since 9.3
-         */
-        public static final String DEFAULT_ALLOWED_METRICS = "nuxeo.cache.default-cache.,nuxeo.cache.user-entry-cache.,nuxeo.cache.group-entry-cache.,nuxeo.directories.directory.userDirectory,nuxeo.directories.directory.groupDirectory";
-
-        /**
-         * @since 9.3
-         */
-        public static final String DEFAULT_DENIED_METRICS = "nuxeo.cache,nuxeo.directories,nuxeo.ActionService,nuxeo.org.apache.logging.log4j.core.Appender.info,nuxeo.org.apache.logging.log4j.core.Appender.debug,nuxeo.org.apache.logging.log4j.core.Appender.trace,nuxeo.org.nuxeo.ecm.core.management.standby.StandbyComponent";
-
-        /**
-         * @since 9.3
-         */
-        public static final String ALL_METRICS = "ALL";
-
-        /**
-         * A comma separated list of timer attributes than will not be reported.
-         *
-         * @since 11.1
-         */
-        public static final String DISABLED_ATTRIBUTES_PROPERTY = "metrics.graphite.disableTimerAttributes";
-
-        /**
-         * @since 11.1
-         */
-        public static final String DEFAULT_DISABLED_ATTRIBUTES = "p999,p95,p99,sum,m15_rate,mean_rate,m5_rate";
+        @XNode("@name")
+        protected String name;
 
         @XNode("@enabled")
-        protected Boolean enabled = Boolean.valueOf(Framework.getProperty(ENABLED_PROPERTY, "false"));
+        protected boolean isEnabled = true;
 
-        @XNode("@host")
-        public String host = Framework.getProperty(HOST_PROPERTY, "0.0.0.0");
-
-        @XNode("@port")
-        public Integer port = Integer.valueOf(Framework.getProperty(PORT_PROPERTY, "2030"));
-
-        @XNode("@periodInSecond")
-        public Integer period = Integer.valueOf(Framework.getProperty(PERIOD_PROPERTY, "10"));
-
-        @XNode("@prefix")
-        public String prefix = getPrefix();
-
-        /**
-         * A list of metric prefixes that if defined should be kept reported
-         *
-         * @since 9.3
-         */
-        @XNodeList(value = "allowedMetrics/metric", type = ArrayList.class, componentType = String.class)
-        public List<String> allowedMetrics = Arrays.asList(
-                Framework.getProperty(ALLOWED_METRICS_PROPERTY, DEFAULT_ALLOWED_METRICS).split(","));
-
-        /**
-         * A list of metric prefixes that if defined should not be reported
-         *
-         * @since 9.3
-         */
-        @XNodeList(value = "deniedMetrics/metric", type = ArrayList.class, componentType = String.class)
-        public List<String> deniedMetrics = Arrays.asList(
-                Framework.getProperty(DENIED_METRICS_PROPERTY, DEFAULT_DENIED_METRICS).split(","));
-
-        public String getPrefix() {
-            if (prefix == null) {
-                prefix = Framework.getProperty(PREFIX_PROPERTY, "servers.${hostname}.nuxeo");
-            }
-            String hostname;
-            try {
-                hostname = InetAddress.getLocalHost().getHostName().split("\\.")[0];
-            } catch (UnknownHostException e) {
-                hostname = "unknown";
-            }
-            return prefix.replace("${hostname}", hostname);
-        }
-
-        public static String metricToName(MetricName metric) {
-            if (metric.getTags().isEmpty()) {
-                return metric.getKey();
-            }
-            String name = metric.getKey();
-            for (Map.Entry<String, String> entry : metric.getTags().entrySet()) {
-                String key = "." + entry.getKey() + ".";
-                String keyAndValue = key + entry.getValue() + ".";
-                name = name.replace(key, keyAndValue);
-            }
+        @Override
+        public String getId() {
             return name;
         }
 
-        public boolean filter(MetricName name) {
-            String graphiteName = metricToName(name);
-            return allowedMetrics.stream().anyMatch(f -> ALL_METRICS.equals(f) || graphiteName.startsWith(f))
-                    || deniedMetrics.stream().noneMatch(f -> ALL_METRICS.equals(f) || graphiteName.startsWith(f));
+        public boolean isEnabled() {
+            return isEnabled;
+        }
+    }
+
+    @XNodeList(value = "instrument", type = ArrayList.class, componentType = InstrumentDescriptor.class)
+    protected List<InstrumentDescriptor> instruments = new ArrayList<>();
+
+    @XObject(value = "filter")
+    public static class FilterDescriptor {
+
+        @XNodeList(value = "allow/prefix", type = ArrayList.class, componentType = String.class)
+        protected List<String> allowedPrefix = new ArrayList<>();
+
+        @XNodeList(value = "deny/prefix", type = ArrayList.class, componentType = String.class)
+        protected List<String> deniedPrefix = new ArrayList<>();
+
+        @XNodeList(value = "deny/expansion", type = ArrayList.class, componentType = String.class)
+        protected List<String> deniedExpansions = new ArrayList<>();
+
+        public List<String> getAllowedPrefix() {
+            return Collections.unmodifiableList(allowedPrefix);
         }
 
-        public Set<MetricAttribute> getDisabledAttribute() {
-            List<String> attributes = Arrays.asList(
-                    Framework.getProperty(DISABLED_ATTRIBUTES_PROPERTY, DEFAULT_DISABLED_ATTRIBUTES).split(","));
-            if (attributes.isEmpty()) {
+        public List<String> getDeniedPrefix() {
+            return Collections.unmodifiableList(deniedPrefix);
+        }
+
+        public Set<MetricAttribute> getDeniedExpansions() {
+            if (deniedExpansions.isEmpty()) {
                 return Collections.emptySet();
             }
-            return attributes.stream()
-                             .map(attr -> MetricAttribute.valueOf(attr.toUpperCase().strip()))
-                             .collect(Collectors.toSet());
-        }
-
-        @Override
-        public String toString() {
-            return String.format("graphiteReporter %s prefix: %s, host: %s, port: %d, period: %d",
-                    enabled ? "enabled" : "disabled", prefix, host, port, period);
-        }
-
-        protected NuxeoGraphiteReporter reporter;
-
-        public void enable(MetricRegistry registry) {
-            if (!enabled) {
-                return;
-            }
-
-            InetSocketAddress address = new InetSocketAddress(host, port);
-            @SuppressWarnings("resource") // closed by reporter.stop()
-            Graphite graphite = new Graphite(address);
-            reporter = new NuxeoGraphiteReporter(registry, (name, metric) -> filter(name),
-                    GraphiteReporter.forRegistry(registry)
-                                       .convertRatesTo(TimeUnit.SECONDS)
-                                       .convertDurationsTo(TimeUnit.MICROSECONDS)
-                                       .prefixedWith(getPrefix())
-                                    .filter((name, metric) -> filter(name))
-                                    .disabledMetricAttributes(getDisabledAttribute())
-                                    .build(graphite));
-            reporter.start(period, TimeUnit.SECONDS);
-        }
-
-        public void disable(MetricRegistry registry) {
-            if (reporter == null) {
-                return;
-            }
-            try {
-                reporter.stop();
-            } finally {
-                reporter = null;
-            }
+            return deniedExpansions.stream()
+                                   .map(expansion -> MetricAttribute.valueOf(expansion.toUpperCase().strip()))
+                                   .collect(Collectors.toSet());
         }
     }
 
-    @XObject(value = "log4jInstrumentation")
-    public static class Log4jInstrumentationDescriptor {
+    @XNode(value = "filter")
+    protected FilterDescriptor filter = new FilterDescriptor();
 
-        public static final String ENABLED_PROPERTY = "metrics.log4j.enabled";
-
-        @XNode("@enabled")
-        protected boolean enabled = Boolean.parseBoolean(Framework.getProperty(ENABLED_PROPERTY, "false"));
-
-        private InstrumentedAppender appender;
-
-        @Override
-        public String toString() {
-            return String.format("log4jInstrumentation %s", enabled ? "enabled" : "disabled");
+    public static String expandName(MetricName metric) {
+        if (metric.getTags().isEmpty()) {
+            return metric.getKey();
         }
-
-        public void enable(MetricRegistry registry) {
-            if (!enabled) {
-                return;
-            }
-            LogFactory.getLog(MetricsServiceImpl.class).info(this);
-
-            InstrumentedAppender appender = new InstrumentedAppender(registry, null, null, false);
-            appender.start();
-
-            @SuppressWarnings("resource") // not ours to close
-            LoggerContext context = (LoggerContext) LogManager.getContext(false);
-            Configuration config = context.getConfiguration();
-            config.getLoggerConfig(ROOT_LOGGER_NAME).addAppender(appender, INFO, null);
-            context.updateLoggers(config);
-
+        String name = metric.getKey();
+        for (Map.Entry<String, String> entry : metric.getTags().entrySet()) {
+            String key = "." + entry.getKey() + ".";
+            String keyAndValue = key + entry.getValue() + ".";
+            name = name.replace(key, keyAndValue);
         }
-
-        public void disable(MetricRegistry registry) {
-            if (appender == null) {
-                return;
-            }
-            try {
-                @SuppressWarnings("resource") // not ours to close
-                LoggerContext context = (LoggerContext) LogManager.getContext(false);
-                Configuration config = context.getConfiguration();
-                config.getLoggerConfig(ROOT_LOGGER_NAME).removeAppender(appender.getName());
-                context.updateLoggers(config);
-            } finally {
-                appender = null;
-            }
-        }
-
+        return name;
     }
 
-    @XObject(value = "tomcatInstrumentation")
-    public static class TomcatInstrumentationDescriptor {
-
-        public static final String ENABLED_PROPERTY = "metrics.tomcat.enabled";
-
-        @XNode("@enabled")
-        protected boolean enabled = Boolean.parseBoolean(Framework.getProperty(ENABLED_PROPERTY, "false"));
-
-        @Override
-        public String toString() {
-            return String.format("tomcatInstrumentation %s", enabled ? "enabled" : "disabled");
-        }
-
-        protected void registerTomcatGauge(String mbean, String attribute, MetricRegistry registry, String name) {
-            try {
-                registry.register(MetricRegistry.name("tomcat", name),
-                        new JmxAttributeGauge(new ObjectName(mbean), attribute));
-            } catch (MalformedObjectNameException | IllegalArgumentException e) {
-                throw new UnsupportedOperationException("Cannot compute object name of " + mbean, e);
-            }
-        }
-
-        public void enable(MetricRegistry registry) {
-            if (!enabled) {
-                return;
-            }
-            LogFactory.getLog(MetricsServiceImpl.class).info(this);
-            // TODO: do not hard code the common datasource
-            // nameenable(registry)
-            String pool = "org.nuxeo.ecm.core.management.jtajca:type=ConnectionPoolMonitor,name=jdbc/nuxeo";
-            String connector = String.format("Catalina:type=ThreadPool,name=\"http-nio-%s-%s\"",
-                    Framework.getProperty("nuxeo.bind.address", "0.0.0.0"),
-                    Framework.getProperty("nuxeo.bind.port", "8080"));
-            String requestProcessor = String.format("Catalina:type=GlobalRequestProcessor,name=\"http-nio-%s-%s\"",
-                    Framework.getProperty("nuxeo.bind.address", "0.0.0.0"),
-                    Framework.getProperty("nuxeo.bind.port", "8080"));
-            String manager = "Catalina:type=Manager,host=localhost,context=/nuxeo";
-            registerTomcatGauge(pool, "ConnectionCount", registry, "jdbc-numActive");
-            registerTomcatGauge(pool, "IdleConnectionCount", registry, "jdbc-numIdle");
-            registerTomcatGauge(connector, "currentThreadCount", registry, "currentThreadCount");
-            registerTomcatGauge(connector, "currentThreadsBusy", registry, "currentThreadBusy");
-            registerTomcatGauge(requestProcessor, "errorCount", registry, "errorCount");
-            registerTomcatGauge(requestProcessor, "requestCount", registry, "requestCount");
-            registerTomcatGauge(requestProcessor, "processingTime", registry, "processingTime");
-            registerTomcatGauge(requestProcessor, "bytesReceived", registry, "bytesReceived");
-            registerTomcatGauge(requestProcessor, "bytesSent", registry, "bytesSent");
-            registerTomcatGauge(manager, "activeSessions", registry, "activeSessions");
-        }
-
-        public void disable(MetricRegistry registry) {
-            registry.remove(MetricName.build("tomcat.jdbc-numActive"));
-            registry.remove(MetricName.build("tomcat.jdbc-numIdle"));
-            registry.remove(MetricName.build("tomcat.currentThreadCount"));
-            registry.remove(MetricName.build("tomcat.currentThreadBusy"));
-            registry.remove(MetricName.build("tomcat.errorCount"));
-            registry.remove(MetricName.build("tomcat.requestCount"));
-            registry.remove(MetricName.build("tomcat.processingTime"));
-            registry.remove(MetricName.build("tomcat.activeSessions"));
-        }
+    @Override
+    public boolean matches(MetricName name, Metric metric) {
+        String expandedName = expandName(name);
+        return filter.allowedPrefix.stream().anyMatch(f -> ALL_METRICS.equals(f) || expandedName.startsWith(f))
+                || filter.deniedPrefix.stream().noneMatch(f -> ALL_METRICS.equals(f) || expandedName.startsWith(f));
     }
 
-    @XObject(value = "jvmInstrumentation")
-    public static class JvmInstrumentationDescriptor {
-
-        public static final String ENABLED_PROPERTY = "metrics.jvm.enabled";
-
-        @XNode("@enabled")
-        protected boolean enabled = Boolean.parseBoolean(Framework.getProperty(ENABLED_PROPERTY, "true"));
-
-        public void enable(MetricRegistry registry) {
-            if (!enabled) {
-                return;
-            }
-            registry.register("jvm.memory", new MemoryUsageGaugeSet());
-            registry.register("jvm.garbage", new GarbageCollectorMetricSet());
-            registry.register("jvm.threads", new ThreadStatesGaugeSet());
-            registry.register("jvm.files", new FileDescriptorRatioGauge());
-            registry.register("jvm.buffers",
-                    new BufferPoolMetricSet(Framework.getService(ServerLocator.class).lookupServer()));
-        }
-
-        public void disable(MetricRegistry registry) {
-            if (!enabled) {
-                return;
-            }
-            registry.removeMatching((name, metric) -> name.getKey().startsWith("jvm."));
-
-        }
+    public Set<MetricAttribute> getDeniedExpansions() {
+        return filter.getDeniedExpansions();
     }
 
-    @XNode("graphiteReporter")
-    public GraphiteDescriptor graphiteReporter = new GraphiteDescriptor();
-
-    @XNode("log4jInstrumentation")
-    public Log4jInstrumentationDescriptor log4jInstrumentation = new Log4jInstrumentationDescriptor();
-
-    @XNode("tomcatInstrumentation")
-    public TomcatInstrumentationDescriptor tomcatInstrumentation = new TomcatInstrumentationDescriptor();
-
-    @XNode(value = "jvmInstrumentation")
-    public JvmInstrumentationDescriptor jvmInstrumentation = new JvmInstrumentationDescriptor();
-
-    protected JmxReporter jmxReporter;
-
-    public void enable(MetricRegistry registry) {
-        jmxReporter = JmxReporter.forRegistry(registry).build();
-        jmxReporter.start();
-        graphiteReporter.enable(registry);
-        log4jInstrumentation.enable(registry);
-        tomcatInstrumentation.enable(registry);
-        jvmInstrumentation.enable(registry);
+    public boolean isEnabled() {
+        return isEnabled;
     }
 
-    public void disable(MetricRegistry registry) {
-        try {
-            graphiteReporter.disable(registry);
-            log4jInstrumentation.disable(registry);
-            tomcatInstrumentation.disable(registry);
-            jvmInstrumentation.disable(registry);
-            jmxReporter.stop();
-        } finally {
-            jmxReporter = null;
-        }
+    public List<InstrumentDescriptor> getInstruments() {
+        return instruments;
     }
 
 }
