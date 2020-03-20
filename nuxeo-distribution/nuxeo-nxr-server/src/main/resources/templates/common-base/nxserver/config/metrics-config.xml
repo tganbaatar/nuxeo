@@ -56,6 +56,12 @@
       <option name="tags">${metrics.datadog.tags}</option>
     </reporter>
 
-  </extension>
+    <reporter enabled="${metrics.prometheus.enabled}" name="prometheus"
+      class="org.nuxeo.runtime.metrics.reporter.PrometheusReporter">
+      <option name="port">${metrics.prometheus.port}</option>
+      <option name="zport">${metrics.prometheus.zport}</option>
+    </reporter>
+
+ </extension>
 
 </component>
