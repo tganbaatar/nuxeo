@@ -127,16 +127,19 @@ public final class CoreEventConstants {
     public static final String RESET_CREATOR = "resetCreator";
 
     /**
-     * Passed with {@value DocumentEventTypes#BEFORE_SET_RETENTION} and {@value DocumentEventTypes#AFTER_SET_RETENTION}
-     * events, the retention datetime (a {@link Calendar} object).
+     * Passed with {@value DocumentEventTypes#BEFORE_SET_RETENTION},{@value DocumentEventTypes#BEFORE_EXTEND_RETENTION},
+     * {@value DocumentEventTypes#AFTER_SET_RETENTION} and {@value DocumentEventTypes#AFTER_EXTEND_RETENTION} events,
+     * the retention datetime (a {@link java.util.Calendar} object).
      *
      * @since 11.1
      */
     public static final String RETAIN_UNTIL = "retainUntil";
 
     /**
-     * Passed with {@value DocumentEventTypes#BEFORE_SET_LEGAL_HOLD} and
-     * {@value DocumentEventTypes#AFTER_SET_LEGAL_HOLD} events, the legal hold status (a {@link Boolean} object).
+     * Passed with
+     * {@value DocumentEventTypes#BEFORE_SET_LEGAL_HOLD},{@value DocumentEventTypes#BEFORE_REMOVE_LEGAL_HOLD},
+     * {@value DocumentEventTypes#AFTER_SET_LEGAL_HOLD} and {@value DocumentEventTypes#AFTER_REMOVE_LEGAL_HOLD} events,
+     * the legal hold status (a {@link Boolean} object).
      *
      * @since 11.1
      */
